@@ -7,7 +7,10 @@ interface SimplePlacementStrategy<T> {
     width: number;
     height: number;
   };
-  calculateItemInformation(item: T, index: number, previousItemPlacements: Area[]): Area;
+  /**
+   * Warning: itemPlacements is pre-allocated with the correct size, and will contain uninitialized values.
+   */
+  calculateItemInformation(item: T, index: number, itemPlacements: Area[]): Area;
 }
 
 export interface SimpleVirtualScrollConfig<T> {
@@ -19,11 +22,10 @@ export interface SimpleVirtualScrollConfig<T> {
 
 export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T>): VirtualScrollWithTransform<T> {
   const itemPlacements = computed(() => {
-    const result: Area[] = [];
     const contentArray = config.content()
+    const result: Area[] = new Array(contentArray.length);
     for (let i = 0; i < contentArray.length; i++) {
-      const item = contentArray[i];
-      result.push(config.itemPlacementStrategy.calculateItemInformation(item, i, result));
+      result[i] = config.itemPlacementStrategy.calculateItemInformation(contentArray[i], i, result);
     }
     return result;
   });

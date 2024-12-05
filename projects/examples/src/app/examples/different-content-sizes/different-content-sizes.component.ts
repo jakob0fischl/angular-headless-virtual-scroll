@@ -20,8 +20,8 @@ export class DifferentContentSizesComponent {
           height: itemPlacements[itemPlacements.length - 1].bottom,
         };
       },
-      calculateItemInformation(item, index, previousItemSizes) {
-        const previousBottom = previousItemSizes[previousItemSizes.length - 1]?.bottom ?? 0;
+      calculateItemInformation(item, index, itemPlacements) {
+        const previousBottom = itemPlacements[index - 1]?.bottom ?? 0;
         const gap = (index === 0 ? 0 : 8);
         return {
           top: previousBottom + gap,
