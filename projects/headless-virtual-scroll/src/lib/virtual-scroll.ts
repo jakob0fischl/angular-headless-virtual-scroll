@@ -1,5 +1,5 @@
 import {computed, Signal} from '@angular/core';
-import {currentScrollOffset, visiblePartOfContainerWithPadding} from './helpers';
+import {visiblePartOfContainerWithPadding} from './container-visibility-info';
 import type {Area} from './area';
 
 interface PlacementStrategy<T> {
@@ -29,27 +29,18 @@ export type VirtualScrollWithTransform<T> = VirtualScroll<T> & {
 };
 
 export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualScrollWithTransform<T> {
-  const visiblePartOfContainer = visiblePartOfContainerWithPadding(config.scrollContainer, config.cacheExtent);
-  const scrollOffset = currentScrollOffset(config.scrollContainer);
-
-  const visiblePart = computed(() => {
-    const visiblePartOfContainerValue = visiblePartOfContainer();
-    const scrollOffsetValue = scrollOffset();
-    return {
-      top: visiblePartOfContainerValue.top + scrollOffsetValue.top,
-      left: visiblePartOfContainerValue.left + scrollOffsetValue.left,
-      right: visiblePartOfContainerValue.right + scrollOffsetValue.left,
-      bottom: visiblePartOfContainerValue.bottom + scrollOffsetValue.top,
-    };
-  });
+  const containerVisibilityInfo = visiblePartOfContainerWithPadding(config.scrollContainer, config.cacheExtent);
 
   const areaToRender = computed(() => {
-    const visiblePartValue = visiblePart();
+    const {
+      visiblePartOfContainer,
+      scrollOffsetInsideContainer,
+    } = containerVisibilityInfo();
     return {
-      top: visiblePartValue.top - config.cacheExtent,
-      left: visiblePartValue.left - config.cacheExtent,
-      right: visiblePartValue.right + config.cacheExtent,
-      bottom: visiblePartValue.bottom + config.cacheExtent,
+      top: visiblePartOfContainer.top + scrollOffsetInsideContainer.top - config.cacheExtent,
+      left: visiblePartOfContainer.left + scrollOffsetInsideContainer.left - config.cacheExtent,
+      right: visiblePartOfContainer.right + scrollOffsetInsideContainer.left + config.cacheExtent,
+      bottom: visiblePartOfContainer.bottom + scrollOffsetInsideContainer.top + config.cacheExtent,
     };
   });
 
