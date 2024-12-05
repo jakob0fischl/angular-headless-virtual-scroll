@@ -1,5 +1,7 @@
 # HeadlessVirtualScroll
 
+## This project is an example of how to implement a performant and extremely flexible virtual scroll.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.3.
 
 ## Development server

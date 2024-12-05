@@ -1,5 +1,5 @@
 import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
-import {createVirtualScroll} from '../../../headless-virtual-scroll/src/lib/virtual-scroll';
+import {createSimpleVirtualScroll} from '../../../headless-virtual-scroll/src/lib/simple-virtual-scroll';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,9 @@ import {createVirtualScroll} from '../../../headless-virtual-scroll/src/lib/virt
 export class AppComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');
 
-  protected readonly virtualScroll = createVirtualScroll<number>({
+  // TODO infinite 2d scroll example
+  // TODO list with dynamically sized elements example
+  protected readonly virtualScroll = createSimpleVirtualScroll<number>({
     scrollContainer: computed(() => this.scrollContainer().nativeElement),
     content: signal(Array.from({ length: 10000000 }).fill(0).map((_, i) => i)),
     itemPlacementStrategy: {
