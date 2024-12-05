@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {RouterLink} from '@angular/router';
 
 @Component({
@@ -7,6 +7,7 @@ import {RouterLink} from '@angular/router';
     RouterLink,
   ],
   templateUrl: './example-selection.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExampleSelectionComponent {
 

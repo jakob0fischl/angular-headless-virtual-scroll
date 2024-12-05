@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, Signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, Signal, viewChild} from '@angular/core';
 import {createVirtualScroll} from '../../../../../headless-virtual-scroll/src/public-api';
 import {Area} from '../../../../../headless-virtual-scroll/src/lib/area';
 import {TransformPipe} from './transform.pipe';
@@ -9,6 +9,7 @@ import {TransformPipe} from './transform.pipe';
     TransformPipe,
   ],
   templateUrl: './infinite-two-dimensional.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InfiniteTwoDimensionalComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');

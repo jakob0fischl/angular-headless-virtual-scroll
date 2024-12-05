@@ -38,7 +38,13 @@
     },
     "examples": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "none",
+          "skipTests": true,
+          "changeDetection": "OnPush"
+        }
+      },
       "root": "projects/examples",
       "sourceRoot": "projects/examples/src",
       "prefix": "app",

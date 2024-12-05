@@ -1,10 +1,11 @@
-import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild} from '@angular/core';
 import {createSimpleVirtualScroll, simpleFlexLayout} from '../../../../../headless-virtual-scroll/src/public-api';
 
 @Component({
   selector: 'app-simple-list',
   imports: [],
   templateUrl: './simple-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SimpleListComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');

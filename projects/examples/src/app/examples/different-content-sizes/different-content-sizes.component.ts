@@ -1,10 +1,11 @@
-import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild} from '@angular/core';
 import {createSimpleVirtualScroll} from '../../../../../headless-virtual-scroll/src/lib/simple-virtual-scroll';
 
 @Component({
   selector: 'app-different-content-sizes',
   imports: [],
   templateUrl: './different-content-sizes.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DifferentContentSizesComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');

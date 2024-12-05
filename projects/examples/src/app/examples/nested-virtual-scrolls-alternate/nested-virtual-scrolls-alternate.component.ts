@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild} from '@angular/core';
 import {
   NESTED_ELEMENT_COUNT,
   NestedScrollContentAlternateComponent,
@@ -14,6 +14,7 @@ import {
     NestedScrollContentAlternateComponent,
   ],
   templateUrl: './nested-virtual-scrolls-alternate.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NestedVirtualScrollsAlternateComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');

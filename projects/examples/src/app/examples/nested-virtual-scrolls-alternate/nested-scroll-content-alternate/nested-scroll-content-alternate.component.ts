@@ -1,4 +1,4 @@
-import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, ElementRef, signal, viewChild} from '@angular/core';
 import {
   createSimpleVirtualScroll,
   simpleFlexLayout,
@@ -10,6 +10,7 @@ export const NESTED_ELEMENT_COUNT = 100;
   selector: 'app-nested-scroll-content-alternate',
   imports: [],
   templateUrl: './nested-scroll-content-alternate.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NestedScrollContentAlternateComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');
