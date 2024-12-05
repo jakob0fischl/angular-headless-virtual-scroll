@@ -3,8 +3,8 @@ import {computed, effect, signal, Signal} from '@angular/core';
 interface ElementPlacement {
   top: number;
   left: number;
-  width: number;
-  height: number;
+  right: number;
+  bottom: number;
 }
 
 interface PlacementStrategy<T> {
@@ -48,8 +48,8 @@ export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualS
     return {
       top: visiblePartOfContainerValue.top + scrollOffsetValue.top,
       left: visiblePartOfContainerValue.left + scrollOffsetValue.left,
-      width: visiblePartOfContainerValue.width,
-      height: visiblePartOfContainerValue.height,
+      right: visiblePartOfContainerValue.right + scrollOffsetValue.left,
+      bottom: visiblePartOfContainerValue.bottom + scrollOffsetValue.top,
     };
   });
 
@@ -58,23 +58,33 @@ export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualS
     return {
       top: visiblePartValue.top - config.cacheExtent,
       left: visiblePartValue.left - config.cacheExtent,
-      width: visiblePartValue.width + config.cacheExtent * 2,
-      height: visiblePartValue.height + config.cacheExtent * 2,
+      right: visiblePartValue.right + config.cacheExtent,
+      bottom: visiblePartValue.bottom + config.cacheExtent,
     };
   });
 
+  const itemPlacements = computed(() =>
+    config.content().map(item => config.itemPlacementStrategy.calculateItemInformation(item))
+  );
+
   const visibleElements = computed(() => {
-    const visiblePartValue = visiblePart();
+    const activeAreaValue = activeArea();
     const contentValue = config.content();
-    return contentValue.filter((item) => {
-      const itemPlacement = config.itemPlacementStrategy.calculateItemInformation(item);
-      return (
-        itemPlacement.top >= visiblePartValue.top &&
-        itemPlacement.top + itemPlacement.height <= visiblePartValue.top + visiblePartValue.height &&
-        itemPlacement.left >= visiblePartValue.left &&
-        itemPlacement.left + itemPlacement.width <= visiblePartValue.left + visiblePartValue.width
-      );
-    });
+    const itemPlacementsValue = itemPlacements();
+    // With millions of elements this becomes performance critical
+    const result: T[] = [];
+    for (let i = 0; i < contentValue.length; i++) {
+      const itemPlacement = itemPlacementsValue[i];
+      if (
+        itemPlacement.top >= activeAreaValue.top &&
+        itemPlacement.bottom <= activeAreaValue.bottom &&
+        itemPlacement.right <= activeAreaValue.right &&
+        itemPlacement.left >= activeAreaValue.left
+      ) {
+        result.push(contentValue[i]);
+      }
+    }
+    return result;
   });
 
   return {
@@ -94,8 +104,9 @@ function visiblePartOfContainerWithPadding(
   const visiblePartOfContainer = signal<ElementPlacement>({
     top: 0,
     left: 0,
-    width: container().clientWidth,
-    height: container().clientHeight,
+    // TODO way to provide a default initial value?
+    right: 0,
+    bottom: 0,
   });
 
   effect((onCleanup) => {
@@ -109,8 +120,8 @@ function visiblePartOfContainerWithPadding(
       visiblePartOfContainer.set({
         top: entry.intersectionRect.top,
         left: entry.intersectionRect.left,
-        width: entry.intersectionRect.width,
-        height: entry.intersectionRect.height,
+        right: entry.intersectionRect.right,
+        bottom: entry.intersectionRect.bottom,
       });
     }, {
       root: null, // browser viewport
@@ -136,8 +147,9 @@ function currentScrollOffset(
     top: number;
     left: number;
   }>({
-    top: container().scrollTop,
-    left: container().scrollLeft,
+    // TODO way to provide a default initial value?
+    top: 0,
+    left: 0,
   });
 
   effect((onCleanup) => {

@@ -1,41 +1,45 @@
-import {Component, signal, viewChild} from '@angular/core';
+import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
 import {createVirtualScroll} from '../../../headless-virtual-scroll/src/lib/virtual-scroll';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  protected readonly scrollContainer = viewChild.required('scrollContainer', { read: HTMLElement });
+  protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');
 
   protected readonly virtualScroll = createVirtualScroll<number>({
-    scrollContainer: this.scrollContainer,
-    content: signal(Array.from({ length: 100000 }).fill(0).map((_, i) => i)),
+    scrollContainer: computed(() => this.scrollContainer().nativeElement),
+    content: signal(Array.from({ length: 10000000 }).fill(0).map((_, i) => i)),
     itemPlacementStrategy: {
       calculateTotalSize(allItems) {
         return {
           width: 100,
-          height: 100,
+          height: 108 * allItems.length,
         };
       },
       calculateItemInformation(item) {
         return {
           top: item * 108,
           left: 0,
-          width: 100,
-          height: 100,
+          right: 108,
+          bottom: (item + 1) * 108,
         };
       },
       calculateRequiredOffset(visibleItems, allItems) {
+        const invisibleItems = allItems.indexOf(visibleItems[0]);
         return {
-          top: 0,
+          top: invisibleItems * 108,
           left: 0,
         };
       },
     },
     cacheExtent: 1000,
-  })
+  });
+
+  protected readonly transform = computed(() => {
+    return `translate(${this.virtualScroll.viewportOffset().left}px, ${this.virtualScroll.viewportOffset().top}px)`;
+  });
 }
