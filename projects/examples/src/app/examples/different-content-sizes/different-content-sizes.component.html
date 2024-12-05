@@ -1,1 +1,12 @@
-<p>different-content-sizes works!</p>
+
+<div #scrollContainer class="relative h-screen w-screen overflow-scroll">
+  <div class="contain-content absolute flex flex-col gap-2 bg-blue-500 top-0 left-0" [style.transform]="virtualScroll.transform()">
+    @for (item of virtualScroll.elementsToRender(); track $index) {
+      <div class="w-[100px] bg-red-500" [style.height.px]="item"></div>
+    }
+  </div>
+  <div
+    [style.width.px]="virtualScroll.totalSize().width"
+    [style.height.px]="virtualScroll.totalSize().height"
+  ></div>
+</div>

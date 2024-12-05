@@ -3,12 +3,12 @@ import {createVirtualScroll, VirtualScrollWithTransform} from './virtual-scroll'
 import {Area, overlaps} from './area';
 
 interface SimplePlacementStrategy<T> {
-  calculateTotalSize(allItems: T[]): {
+  calculateTotalSize(allItems: T[], itemPlacements: Area[]): {
     width: number;
     height: number;
   };
-  calculateItemInformation(item: T, index: number): Area;
-  calculateRequiredOffset(visibleItems: T[], allItems: T[]): {
+  calculateItemInformation(item: T, index: number, previousItemPlacements: Area[]): Area;
+  calculateRequiredOffset(allItems: T[], isVisible: boolean[], itemPlacements: Area[]): {
     top: number;
     left: number;
   };
@@ -22,21 +22,28 @@ export interface SimpleVirtualScrollConfig<T> {
 }
 
 export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T>): VirtualScrollWithTransform<T> {
-  const itemPlacements = computed(() =>
-    config.content().map(((item, index) => config.itemPlacementStrategy.calculateItemInformation(item, index)))
-  );
+  const itemPlacements = computed(() => {
+    const result: Area[] = [];
+    const contentArray = config.content()
+    for (let i = 0; i < contentArray.length; i++) {
+      const item = contentArray[i];
+      result.push(config.itemPlacementStrategy.calculateItemInformation(item, i, result));
+    }
+    return result;
+  });
 
   return createVirtualScroll({
     scrollContainer: config.scrollContainer,
     itemPlacementStrategy: {
       setup(areaToRender: Signal<Area>) {
 
-        const visibleElements = computed(() => {
+        const visibilityInfo = computed(() => {
           const activeAreaValue = areaToRender();
           const contentValue = config.content();
           const itemPlacementsValue = itemPlacements();
           // With millions of elements this becomes performance critical
           const result: T[] = [];
+          const isVisible = new Array(contentValue.length).fill(false);
           // TODO under some conditions this can be optimized using a binary search
           //    - the visible section must be contiguous
           //    - the array must be sorted
@@ -44,18 +51,22 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
             const itemPlacement = itemPlacementsValue[i];
             if (overlaps(itemPlacement, activeAreaValue)) {
               result.push(contentValue[i]);
+              isVisible[i] = true;
             }
           }
-          return result;
+          return {
+            visibleElements: result,
+            isVisible,
+          };
         });
 
         const viewportOffset = computed(() =>
-          config.itemPlacementStrategy.calculateRequiredOffset(visibleElements(), config.content()),
+          config.itemPlacementStrategy.calculateRequiredOffset(config.content(), visibilityInfo().isVisible, itemPlacements()),
         );
 
         return {
-          totalSize: computed(() => config.itemPlacementStrategy.calculateTotalSize(config.content())),
-          elementsToRender: visibleElements,
+          totalSize: computed(() => config.itemPlacementStrategy.calculateTotalSize(config.content(), itemPlacements())),
+          elementsToRender: computed(() => visibilityInfo().visibleElements),
           viewportOffset,
         };
       }
@@ -91,11 +102,17 @@ export function simpleFlexLayout<T>(
           bottom: itemHeight,
         };
       },
-      calculateRequiredOffset(visibleItems, allItems) {
-        const invisibleItems = allItems.indexOf(visibleItems[0]);
+      calculateRequiredOffset(allItems, isVisible) {
+        for (let i = 0; i < allItems.length; i++) {
+          if (isVisible[i])
+            return {
+              top: 0,
+              left: i * totalWidth,
+            };
+        }
         return {
           top: 0,
-          left: invisibleItems * totalWidth,
+          left: 0,
         };
       },
     };
@@ -116,10 +133,16 @@ export function simpleFlexLayout<T>(
           bottom: (index + 1) * totalHeight,
         };
       },
-      calculateRequiredOffset(visibleItems, allItems) {
-        const invisibleItems = allItems.indexOf(visibleItems[0]);
+      calculateRequiredOffset(allItems, isVisible) {
+        for (let i = 0; i < allItems.length; i++) {
+          if (isVisible[i])
+            return {
+              top: i * totalHeight,
+              left: 0,
+            };
+        }
         return {
-          top: invisibleItems * totalHeight,
+          top: 0,
           left: 0,
         };
       },
