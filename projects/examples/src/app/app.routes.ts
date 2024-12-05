@@ -21,4 +21,8 @@ export const routes: Routes = [
     path: 'examples/nested-virtual-scrolls',
     loadComponent: async () => import('./examples/nested-virtual-scrolls/nested-virtual-scrolls.component').then(m => m.NestedVirtualScrollsComponent),
   },
+  {
+    path: 'examples/nested-virtual-scrolls-2',
+    loadComponent: async () => import('./examples/nested-virtual-scrolls-alternate/nested-virtual-scrolls-alternate.component').then(m => m.NestedVirtualScrollsAlternateComponent),
+  },
 ];

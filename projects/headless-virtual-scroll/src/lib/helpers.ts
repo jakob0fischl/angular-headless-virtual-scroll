@@ -29,9 +29,22 @@ export function visiblePartOfContainerWithPadding(
       rootMargin: `${padding.toString(10)}px`,
     });
 
+    /**
+     * this is needed as the intersection observer does not rerun after the first intersection
+     */
+    const scroll = () => {
+      observer.disconnect();
+      observer.observe(container());
+    };
+    document.addEventListener('scroll', scroll, {
+      passive: true,
+      capture: true,
+    });
+
     observer.observe(container());
     onCleanup(() => {
       observer.disconnect();
+      document.removeEventListener('scroll', scroll);
     });
   });
 

@@ -1,23 +1,22 @@
 import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
-import {NestedScrollContentComponent} from './nested-scroll-content/nested-scroll-content.component';
 import {
   createSimpleVirtualScroll,
   simpleFlexLayout,
-} from '../../../../../headless-virtual-scroll/src/lib/simple-virtual-scroll';
+} from '../../../../../../headless-virtual-scroll/src/lib/simple-virtual-scroll';
+
+export const NESTED_ELEMENT_COUNT = 100;
 
 @Component({
-  selector: 'app-nested-virtual-scrolls',
-  imports: [
-    NestedScrollContentComponent,
-  ],
-  templateUrl: './nested-virtual-scrolls.component.html',
+  selector: 'app-nested-scroll-content-alternate',
+  imports: [],
+  templateUrl: './nested-scroll-content-alternate.component.html',
 })
-export class NestedVirtualScrollsComponent {
+export class NestedScrollContentAlternateComponent {
   protected readonly scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');
 
   protected readonly virtualScroll = createSimpleVirtualScroll<number>({
     scrollContainer: computed(() => this.scrollContainer().nativeElement),
-    content: signal(Array.from({ length: 100000 }).fill(0).map((_, i) => i)),
+    content: signal(Array.from({ length: NESTED_ELEMENT_COUNT }).fill(0).map((_, i) => i)),
     itemPlacementStrategy: simpleFlexLayout('column', 100, 100, 8),
     cacheExtent: 1000,
   });

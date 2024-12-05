@@ -1,6 +1,6 @@
 import {computed, Signal} from '@angular/core';
 import {createVirtualScroll, VirtualScrollWithTransform} from './virtual-scroll';
-import {Area} from './area';
+import {Area, overlaps} from './area';
 
 interface SimplePlacementStrategy<T> {
   calculateTotalSize(allItems: T[]): {
@@ -42,12 +42,7 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
           //    - the array must be sorted
           for (let i = 0; i < contentValue.length; i++) {
             const itemPlacement = itemPlacementsValue[i];
-            if (
-              itemPlacement.top >= activeAreaValue.top &&
-              itemPlacement.bottom <= activeAreaValue.bottom &&
-              itemPlacement.right <= activeAreaValue.right &&
-              itemPlacement.left >= activeAreaValue.left
-            ) {
+            if (overlaps(itemPlacement, activeAreaValue)) {
               result.push(contentValue[i]);
             }
           }
@@ -75,8 +70,8 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
  */
 export function simpleFlexLayout<T>(
   direction: 'row' | 'column',
-  itemHeight: number,
   itemWidth: number,
+  itemHeight: number,
   gap: number,
 ): SimplePlacementStrategy<T> {
   if (direction === 'row') {
@@ -100,7 +95,7 @@ export function simpleFlexLayout<T>(
         const invisibleItems = allItems.indexOf(visibleItems[0]);
         return {
           top: 0,
-          left: invisibleItems * 108,
+          left: invisibleItems * totalWidth,
         };
       },
     };
@@ -117,14 +112,14 @@ export function simpleFlexLayout<T>(
         return {
           top: index * totalHeight,
           left: 0,
-          right: 108,
+          right: itemWidth,
           bottom: (index + 1) * totalHeight,
         };
       },
       calculateRequiredOffset(visibleItems, allItems) {
         const invisibleItems = allItems.indexOf(visibleItems[0]);
         return {
-          top: invisibleItems * 108,
+          top: invisibleItems * totalHeight,
           left: 0,
         };
       },
