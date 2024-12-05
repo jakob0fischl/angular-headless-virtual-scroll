@@ -1,4 +1,4 @@
-interface Area {
+export interface Area {
   top: number;
   left: number;
   right: number;

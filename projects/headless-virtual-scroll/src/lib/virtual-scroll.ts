@@ -1,5 +1,6 @@
 import {computed, Signal} from '@angular/core';
 import {currentScrollOffset, visiblePartOfContainerWithPadding} from './helpers';
+import type {Area} from './area';
 
 interface PlacementStrategy<T> {
   setup(areaToRender: Signal<Area>): VirtualScroll<T>;
@@ -7,7 +8,6 @@ interface PlacementStrategy<T> {
 
 export interface VirtualScrollConfig<T> {
   scrollContainer: Signal<HTMLElement>;
-  content: Signal<T[]>;
   itemPlacementStrategy: PlacementStrategy<T>;
   cacheExtent: number;
 }
