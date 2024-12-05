@@ -1,5 +1,5 @@
 import {Component, computed, ElementRef, signal, viewChild} from '@angular/core';
-import {createSimpleVirtualScroll} from '../../../../../headless-virtual-scroll/src/lib/simple-virtual-scroll';
+import {createSimpleVirtualScroll} from '../../../../../headless-virtual-scroll/src/public-api';
 
 @Component({
   selector: 'app-simple-list',
@@ -36,9 +36,5 @@ export class SimpleListComponent {
       },
     },
     cacheExtent: 1000,
-  });
-
-  protected readonly transform = computed(() => {
-    return `translate(${this.virtualScroll.viewportOffset().left}px, ${this.virtualScroll.viewportOffset().top}px)`;
   });
 }

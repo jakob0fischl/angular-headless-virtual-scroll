@@ -1,6 +1,6 @@
 
 <div #scrollContainer class="relative h-screen w-screen overflow-scroll">
-  <div class="contain-content absolute flex flex-col gap-2 bg-blue-500 top-0 left-0" [style.transform]="transform()">
+  <div class="contain-content absolute flex flex-col gap-2 bg-blue-500 top-0 left-0" [style.transform]="virtualScroll.transform()">
     @for (item of virtualScroll.elementsToRender(); track item) {
       <div class="size-[100px] bg-red-500">
         {{item}}

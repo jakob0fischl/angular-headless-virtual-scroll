@@ -24,7 +24,11 @@ export interface VirtualScroll<T> {
   }>;
 }
 
-export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualScroll<T> {
+export type VirtualScrollWithTransform<T> = VirtualScroll<T> & {
+  transform: Signal<string>;
+};
+
+export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualScrollWithTransform<T> {
   const visiblePartOfContainer = visiblePartOfContainerWithPadding(config.scrollContainer, config.cacheExtent);
   const scrollOffset = currentScrollOffset(config.scrollContainer);
 
@@ -49,5 +53,11 @@ export function createVirtualScroll<T>(config: VirtualScrollConfig<T>): VirtualS
     };
   });
 
-  return config.itemPlacementStrategy.setup(areaToRender);
+  const result = config.itemPlacementStrategy.setup(areaToRender);
+  return {
+    ...result,
+    transform: computed(() => {
+      return `translate(${result.viewportOffset().left}px, ${result.viewportOffset().top}px)`;
+    }),
+  };
 }

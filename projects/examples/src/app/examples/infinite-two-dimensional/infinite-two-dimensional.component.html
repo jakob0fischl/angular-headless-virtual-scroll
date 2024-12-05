@@ -1,1 +1,11 @@
-<p>infinite-two-dimensional works!</p>
+
+<div #scrollContainer class="relative h-screen w-screen overflow-scroll">
+  <!-- index is fine here because elements don't really have a unique id and the only thing that changes is the transform -->
+  @for (item of virtualScroll.elementsToRender(); track $index) {
+    <div class="absolute top-0 left-0 size-[10px] bg-red-500" [style.transform]="item | transform"></div>
+  }
+  <div
+    [style.width.px]="virtualScroll.totalSize().width"
+    [style.height.px]="virtualScroll.totalSize().height"
+  ></div>
+</div>

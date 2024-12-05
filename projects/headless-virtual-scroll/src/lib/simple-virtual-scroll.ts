@@ -1,5 +1,5 @@
 import {computed, Signal} from '@angular/core';
-import {createVirtualScroll, VirtualScroll} from './virtual-scroll';
+import {createVirtualScroll, VirtualScrollWithTransform} from './virtual-scroll';
 import {Area} from './area';
 
 interface SimplePlacementStrategy<T> {
@@ -21,7 +21,7 @@ export interface SimpleVirtualScrollConfig<T> {
   cacheExtent: number;
 }
 
-export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T>): VirtualScroll<T> {
+export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T>): VirtualScrollWithTransform<T> {
   const itemPlacements = computed(() =>
     config.content().map(item => config.itemPlacementStrategy.calculateItemInformation(item))
   );
@@ -29,7 +29,7 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
   return createVirtualScroll({
     scrollContainer: config.scrollContainer,
     itemPlacementStrategy: {
-      setup(areaToRender: Signal<Area>): VirtualScroll<T> {
+      setup(areaToRender: Signal<Area>) {
 
         const visibleElements = computed(() => {
           const activeAreaValue = areaToRender();
@@ -37,6 +37,9 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
           const itemPlacementsValue = itemPlacements();
           // With millions of elements this becomes performance critical
           const result: T[] = [];
+          // TODO under some conditions this can be optimized using a binary search
+          //    - the visible section must be contiguous
+          //    - the array must be sorted
           for (let i = 0; i < contentValue.length; i++) {
             const itemPlacement = itemPlacementsValue[i];
             if (
@@ -51,13 +54,14 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
           return result;
         });
 
+        const viewportOffset = computed(() =>
+          config.itemPlacementStrategy.calculateRequiredOffset(visibleElements(), config.content()),
+        );
 
         return {
           totalSize: computed(() => config.itemPlacementStrategy.calculateTotalSize(config.content())),
           elementsToRender: visibleElements,
-          viewportOffset: computed(() =>
-            config.itemPlacementStrategy.calculateRequiredOffset(visibleElements(), config.content()),
-          ),
+          viewportOffset,
         };
       }
     },
