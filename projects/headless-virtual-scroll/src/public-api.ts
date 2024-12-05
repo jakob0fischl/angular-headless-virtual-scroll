@@ -3,4 +3,4 @@
  */
 
 export {createVirtualScroll, type VirtualScroll, type VirtualScrollConfig, type VirtualScrollWithTransform} from './lib/virtual-scroll';
-export {createSimpleVirtualScroll, type SimpleVirtualScrollConfig} from './lib/simple-virtual-scroll';
+export {createSimpleVirtualScroll, simpleFlexLayout, type SimpleVirtualScrollConfig} from './lib/simple-virtual-scroll';

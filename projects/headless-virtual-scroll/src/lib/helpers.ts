@@ -1,10 +1,10 @@
 import {effect, signal, Signal} from '@angular/core';
+import {Area} from './area';
 
 export function visiblePartOfContainerWithPadding(
   container: Signal<HTMLElement>,
   padding: number,
 ): Signal<Area> {
-  // TODO I think this is currently not relative to the container, but to the viewport
   const visiblePartOfContainer = signal<Area>({
     top: 0,
     left: 0,
@@ -13,18 +13,16 @@ export function visiblePartOfContainerWithPadding(
   });
 
   effect((onCleanup) => {
+    // TODO intersection observer does not update when the viewport is resized. Should register a separate ResizeObserver for that
     const observer = new IntersectionObserver((entries) => {
-      if (entries.length !== 1) {
-        console.warn('IntersectionObserver should only return one entry');
-        return;
-      }
+      const entry = entries[entries.length - 1];
 
-      const entry = entries[0];
+      const containerRect = container().getBoundingClientRect();
       visiblePartOfContainer.set({
-        top: entry.intersectionRect.top,
-        left: entry.intersectionRect.left,
-        right: entry.intersectionRect.right,
-        bottom: entry.intersectionRect.bottom,
+        top: entry.intersectionRect.top - containerRect.top,
+        left: entry.intersectionRect.left - containerRect.left,
+        right: entry.intersectionRect.right - containerRect.left,
+        bottom: entry.intersectionRect.bottom - containerRect.top,
       });
     }, {
       root: null, // browser viewport
