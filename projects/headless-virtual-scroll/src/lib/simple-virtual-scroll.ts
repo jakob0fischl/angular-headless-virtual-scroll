@@ -1,6 +1,6 @@
 import {computed, Signal} from '@angular/core';
 import {createVirtualScroll, VirtualScrollWithTransform} from './virtual-scroll';
-import {Area, overlaps} from './area';
+import {Area} from './area';
 
 interface SimplePlacementStrategy<T> {
   calculateTotalSize(allItems: T[], itemPlacements: Area[]): {
@@ -8,10 +8,6 @@ interface SimplePlacementStrategy<T> {
     height: number;
   };
   calculateItemInformation(item: T, index: number, previousItemPlacements: Area[]): Area;
-  calculateRequiredOffset(allItems: T[], isVisible: boolean[], itemPlacements: Area[]): {
-    top: number;
-    left: number;
-  };
 }
 
 export interface SimpleVirtualScrollConfig<T> {
@@ -43,31 +39,41 @@ export function createSimpleVirtualScroll<T>(config: SimpleVirtualScrollConfig<T
           const itemPlacementsValue = itemPlacements();
           // With millions of elements this becomes performance critical
           const result: T[] = [];
-          const isVisible = new Array(contentValue.length).fill(false);
+
+          let minVisibleLeft = Number.MAX_SAFE_INTEGER;
+          let minVisibleTop = Number.MAX_SAFE_INTEGER;
           // TODO under some conditions this can be optimized using a binary search
           //    - the visible section must be contiguous
           //    - the array must be sorted
           for (let i = 0; i < contentValue.length; i++) {
             const itemPlacement = itemPlacementsValue[i];
-            if (overlaps(itemPlacement, activeAreaValue)) {
+            if (
+              itemPlacement.top <= activeAreaValue.bottom &&
+              itemPlacement.bottom >= activeAreaValue.top &&
+              itemPlacement.left <= activeAreaValue.right &&
+              itemPlacement.right >= activeAreaValue.left
+            ) {
               result.push(contentValue[i]);
-              isVisible[i] = true;
+              if (itemPlacement.left < minVisibleLeft)
+                minVisibleLeft = itemPlacement.left;
+              if (itemPlacement.top < minVisibleTop)
+                minVisibleTop = itemPlacement.top;
             }
           }
+
           return {
             visibleElements: result,
-            isVisible,
+            viewportOffset: {
+              left: minVisibleLeft === Number.MAX_SAFE_INTEGER ? 0 : minVisibleLeft,
+              top: minVisibleTop === Number.MAX_SAFE_INTEGER ? 0 : minVisibleTop,
+            },
           };
         });
-
-        const viewportOffset = computed(() =>
-          config.itemPlacementStrategy.calculateRequiredOffset(config.content(), visibilityInfo().isVisible, itemPlacements()),
-        );
 
         return {
           totalSize: computed(() => config.itemPlacementStrategy.calculateTotalSize(config.content(), itemPlacements())),
           elementsToRender: computed(() => visibilityInfo().visibleElements),
-          viewportOffset,
+          viewportOffset: computed(() => visibilityInfo().viewportOffset),
         };
       }
     },
@@ -102,19 +108,6 @@ export function simpleFlexLayout<T>(
           bottom: itemHeight,
         };
       },
-      calculateRequiredOffset(allItems, isVisible) {
-        for (let i = 0; i < allItems.length; i++) {
-          if (isVisible[i])
-            return {
-              top: 0,
-              left: i * totalWidth,
-            };
-        }
-        return {
-          top: 0,
-          left: 0,
-        };
-      },
     };
   } else {
     const totalHeight = itemHeight + gap;
@@ -131,19 +124,6 @@ export function simpleFlexLayout<T>(
           left: 0,
           right: itemWidth,
           bottom: (index + 1) * totalHeight,
-        };
-      },
-      calculateRequiredOffset(allItems, isVisible) {
-        for (let i = 0; i < allItems.length; i++) {
-          if (isVisible[i])
-            return {
-              top: i * totalHeight,
-              left: 0,
-            };
-        }
-        return {
-          top: 0,
-          left: 0,
         };
       },
     };

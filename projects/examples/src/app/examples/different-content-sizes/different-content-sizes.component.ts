@@ -12,7 +12,6 @@ export class DifferentContentSizesComponent {
   protected readonly virtualScroll = createSimpleVirtualScroll<number>({
     scrollContainer: computed(() => this.scrollContainer().nativeElement),
     content: signal(Array.from({ length: 10000 }).fill(0).map((_, i) => 10 * (i % 10 + 1))),
-    // TODO this is much simpler than the config for same size elements, we should probably always use this
     itemPlacementStrategy: {
       calculateTotalSize(allItems, itemPlacements) {
         return {
@@ -28,19 +27,6 @@ export class DifferentContentSizesComponent {
           left: 0,
           right: 100,
           bottom: previousBottom + gap + item,
-        };
-      },
-      calculateRequiredOffset(allItems, isVisible, itemPlacements) {
-        for (let i = 0; i < allItems.length; i++) {
-          if (isVisible[i])
-            return {
-              top: itemPlacements[i].top,
-              left: 0,
-            };
-        }
-        return {
-          top: 0,
-          left: 0,
         };
       },
     },
